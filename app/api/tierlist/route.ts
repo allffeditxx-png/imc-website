@@ -37,25 +37,68 @@ function getRequiredRole(tier: string, gamemode: string) {
   return `${tier} • ${roleGamemode}`.toLowerCase();
 }
 
-async function discordFetch(url: string) {
+async function discordFetch(url: string, retries = 3) {
   const token = process.env.TOKEN;
 
   if (!token) {
     throw new Error("TOKEN environment variable is missing.");
   }
 
-  const response = await fetch(`https://discord.com/api/v10${url}`, {
-    headers: {
-      Authorization: `Bot ${token}`,
-    },
-    cache: "no-store",
-  });
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const response = await fetch(
+        `https://discord.com/api/v10${url}`,
+        {
+          headers: {
+            Authorization: `Bot ${token}`,
+          },
+          cache: "no-store",
+        }
+      );
 
-  if (!response.ok) {
-    return null;
+      if (response.ok) {
+        return {
+          status: response.status,
+          data: await response.json(),
+        };
+      }
+
+      // Confirmed absence — do not retry.
+      if (response.status === 404) {
+        return {
+          status: 404,
+          data: null,
+        };
+      }
+
+      // Retry rate limits and temporary Discord/server errors.
+      if (
+        response.status === 429 ||
+        response.status >= 500
+      ) {
+        if (attempt < retries) {
+          await new Promise(resolve =>
+            setTimeout(resolve, attempt * 1000)
+          );
+          continue;
+        }
+      }
+
+      return {
+        status: response.status,
+        data: null,
+      };
+    } catch {
+      if (attempt < retries) {
+        await new Promise(resolve =>
+          setTimeout(resolve, attempt * 1000)
+        );
+        continue;
+      }
+    }
   }
 
-  return response.json();
+  throw new Error(`Discord request failed: ${url}`);
 }
 
 export async function GET() {
@@ -64,30 +107,66 @@ export async function GET() {
       fs.readFileSync(databasePath, "utf8")
     );
 
-    const roles = await discordFetch(`/guilds/${GUILD_ID}/roles`);
+    // Roles are required for the whole validation process.
+    // A temporary failure must NOT produce an incomplete tierlist.
+    const rolesResponse = await discordFetch(
+      `/guilds/${GUILD_ID}/roles`
+    );
 
-    if (!Array.isArray(roles)) {
+    if (
+      !rolesResponse ||
+      rolesResponse.status !== 200 ||
+      !Array.isArray(rolesResponse.data)
+    ) {
       throw new Error("Failed to fetch Discord roles.");
     }
 
     const roleNames = new Map<string, string>();
 
-    for (const role of roles) {
-      roleNames.set(role.id, role.name.toLowerCase());
+    for (const role of rolesResponse.data) {
+      roleNames.set(
+        role.id,
+        role.name.toLowerCase()
+      );
     }
 
     const validPlayers = [];
 
-    for (const [username, player] of Object.entries(database) as [string, any][]) {
+    for (const [username, player] of Object.entries(
+      database
+    ) as [string, any][]) {
       if (!player?.userId) continue;
 
-      const member = await discordFetch(
+      const memberResponse = await discordFetch(
         `/guilds/${GUILD_ID}/members/${player.userId}`
       );
 
-      if (!member) continue;
+      // Confirmed that the user is not in the guild.
+      if (
+        !memberResponse ||
+        memberResponse.status === 404
+      ) {
+        continue;
+      }
 
-      const memberRoles = new Set(member.roles || []);
+      if (
+        memberResponse.status !== 200 ||
+        !memberResponse.data
+      ) {
+        // A temporary failure should never silently remove
+        // this player from the tierlist.
+        throw new Error(
+          `Failed to verify Discord member ${player.userId}.`
+        );
+      }
+
+      const member = memberResponse.data;
+      const memberRoles = new Set<string>(
+        Array.isArray(member.roles)
+          ? member.roles
+          : []
+      );
+
       const validGamemodes: Record<string, string> = {};
 
       for (const [gamemode, tier] of Object.entries(
@@ -100,18 +179,26 @@ export async function GET() {
 
         const hasRole = [...memberRoles].some(
           roleId =>
-            roleNames.get(roleId as string) === requiredRole
+            roleNames.get(roleId as string) ===
+            requiredRole
         );
 
         if (hasRole) {
-          validGamemodes[gamemode] = tier as string;
+          validGamemodes[gamemode] = tier;
         }
       }
 
-      if (Object.keys(validGamemodes).length === 0) continue;
+      if (
+        Object.keys(validGamemodes).length === 0
+      ) {
+        continue;
+      }
 
-      const score = Object.values(validGamemodes).reduce(
-        (total, tier) => total + (POINTS[tier] || 0),
+      const score = Object.values(
+        validGamemodes
+      ).reduce(
+        (total, tier) =>
+          total + (POINTS[tier] || 0),
         0
       );
 
@@ -124,14 +211,19 @@ export async function GET() {
       });
     }
 
-    validPlayers.sort((a, b) => b.score - a.score);
+    validPlayers.sort(
+      (a, b) => b.score - a.score
+    );
 
     return NextResponse.json({
       success: true,
       players: validPlayers,
     });
   } catch (error) {
-    console.error("❌ Failed to load tierlist:", error);
+    console.error(
+      "❌ Failed to load tierlist:",
+      error
+    );
 
     return NextResponse.json(
       {
