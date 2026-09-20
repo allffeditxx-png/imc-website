@@ -1,0 +1,23 @@
+import { NextRequest, NextResponse } from "next/server"
+
+export async function GET(request: NextRequest) {
+  const requestedPath =
+    request.nextUrl.searchParams.get("redirect") || "/"
+
+  const safePath =
+    requestedPath.startsWith("/") && !requestedPath.startsWith("//")
+      ? requestedPath
+      : "/"
+
+  const params = new URLSearchParams({
+    client_id: process.env.DISCORD_CLIENT_ID!,
+    redirect_uri: process.env.DISCORD_REDIRECT_URI!,
+    response_type: "code",
+    scope: "identify",
+    state: safePath,
+  })
+
+  return NextResponse.redirect(
+    `https://discord.com/oauth2/authorize?${params.toString()}`
+  )
+}
