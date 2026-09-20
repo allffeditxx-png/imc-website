@@ -16,9 +16,28 @@ export default function AccountButton() {
     fetch("/api/auth/session", { cache: "no-store" })
       .then((res) => res.json())
       .then((data) => {
-        if (data.authenticated) setUser(data.user);
+        if (data.authenticated) {
+          setUser(data.user);
+          return;
+        }
+
+        const localUser = localStorage.getItem("imc_user");
+
+        if (localUser) {
+          try {
+            setUser(JSON.parse(localUser));
+          } catch {}
+        }
       })
-      .catch(() => {});
+      .catch(() => {
+        const localUser = localStorage.getItem("imc_user");
+
+        if (localUser) {
+          try {
+            setUser(JSON.parse(localUser));
+          } catch {}
+        }
+      });
   }, []);
 
   if (!user) {
@@ -32,14 +51,14 @@ export default function AccountButton() {
     );
   }
 
-  const name = user.global_name || user.username || "Discord User";
+  const name = user.global_name || user.username || "User";
 
   return (
     <a
       href="/dashboard"
       className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition hover:bg-white/5"
     >
-      <div className="h-9 w-9 overflow-hidden rounded-full border border-white/10 bg-red-500/10">
+      <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-red-500/10">
         {user.avatar && user.id ? (
           <img
             src={`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=64`}
