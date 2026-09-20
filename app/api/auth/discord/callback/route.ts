@@ -35,8 +35,13 @@ export async function GET(request: Request) {
   const tokenData = await tokenResponse.json()
 
   if (!tokenResponse.ok) {
+    console.error("Discord OAuth token error:", tokenData)
+
     return NextResponse.json(
-      { error: "Failed to exchange Discord code" },
+      {
+        error: "Failed to exchange Discord code",
+        discord: tokenData,
+      },
       { status: 400 }
     )
   }
