@@ -4,6 +4,8 @@ import path from "path";
 
 const databasePath = path.join(process.cwd(), "data", "tierlist.json");
 
+const GUILD_ID = "1545864519530717195";
+
 const POINTS: Record<string, number> = {
   LT5: 1,
   HT5: 2,
@@ -56,84 +58,77 @@ async function discordFetch(url: string) {
   return response.json();
 }
 
-async function getValidPlayers(database: Record<string, any>) {
-  const guilds = await discordFetch("/users/@me/guilds");
-
-  if (!Array.isArray(guilds)) {
-    throw new Error("Failed to fetch Discord guilds.");
-  }
-
-  const validPlayers = [];
-
-  for (const [username, player] of Object.entries(database)) {
-    if (!player?.userId) continue;
-
-    let member: any = null;
-
-    for (const guild of guilds) {
-      const guildMember = await discordFetch(
-        `/guilds/${guild.id}/members/${player.userId}`
-      );
-
-      if (guildMember) {
-        member = guildMember;
-        break;
-      }
-    }
-
-    if (!member) continue;
-
-    const roleIds = new Set(member.roles || []);
-    const validGamemodes: Record<string, string> = {};
-
-    for (const [gamemode, tier] of Object.entries(player.gamemodes || {})) {
-      const requiredRole = getRequiredRole(tier as string, gamemode);
-
-      const roles = await discordFetch(`/guilds/${member.guild_id}/roles`);
-
-      if (!Array.isArray(roles)) continue;
-
-      const hasRole = roles.some(
-        (role: any) =>
-          roleIds.has(role.id) &&
-          role.name.toLowerCase() === requiredRole
-      );
-
-      if (hasRole) {
-        validGamemodes[gamemode] = tier as string;
-      }
-    }
-
-    if (Object.keys(validGamemodes).length === 0) continue;
-
-    const score = Object.values(validGamemodes).reduce(
-      (total, tier) => total + (POINTS[tier] || 0),
-      0
-    );
-
-    validPlayers.push({
-      username,
-      userId: player.userId,
-      region: player.region || "N/A",
-      gamemodes: validGamemodes,
-      score,
-    });
-  }
-
-  return validPlayers.sort((a, b) => b.score - a.score);
-}
-
 export async function GET() {
   try {
     const database = JSON.parse(
       fs.readFileSync(databasePath, "utf8")
     );
 
-    const players = await getValidPlayers(database);
+    const roles = await discordFetch(`/guilds/${GUILD_ID}/roles`);
+
+    if (!Array.isArray(roles)) {
+      throw new Error("Failed to fetch Discord roles.");
+    }
+
+    const roleNames = new Map<string, string>();
+
+    for (const role of roles) {
+      roleNames.set(role.id, role.name.toLowerCase());
+    }
+
+    const validPlayers = [];
+
+    for (const [username, player] of Object.entries(database) as [string, any][]) {
+      if (!player?.userId) continue;
+
+      const member = await discordFetch(
+        `/guilds/${GUILD_ID}/members/${player.userId}`
+      );
+
+      if (!member) continue;
+
+      const memberRoles = new Set(member.roles || []);
+      const validGamemodes: Record<string, string> = {};
+
+      for (const [gamemode, tier] of Object.entries(
+        player.gamemodes || {}
+      ) as [string, string][]) {
+        const requiredRole = getRequiredRole(
+          tier as string,
+          gamemode as string
+        );
+
+        const hasRole = [...memberRoles].some(
+          roleId =>
+            roleNames.get(roleId as string) === requiredRole
+        );
+
+        if (hasRole) {
+          validGamemodes[gamemode] = tier as string;
+        }
+      }
+
+      if (Object.keys(validGamemodes).length === 0) continue;
+
+      const score = Object.values(validGamemodes).reduce(
+        (total, tier) => total + (POINTS[tier] || 0),
+        0
+      );
+
+      validPlayers.push({
+        username,
+        userId: player.userId,
+        region: player.region || "N/A",
+        gamemodes: validGamemodes,
+        score,
+      });
+    }
+
+    validPlayers.sort((a, b) => b.score - a.score);
 
     return NextResponse.json({
       success: true,
-      players,
+      players: validPlayers,
     });
   } catch (error) {
     console.error("❌ Failed to load tierlist:", error);
