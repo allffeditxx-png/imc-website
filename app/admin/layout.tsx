@@ -1,8 +1,5 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { getSession } from "@/lib/auth";
-import { promises as fs } from "fs";
-import path from "path";
 
 export default async function AdminLayout({
   children,
@@ -10,32 +7,32 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const cookieStore = await cookies();
-  const token = cookieStore.get("imc_session")?.value;
+  const username = cookieStore.get("imc_username")?.value;
 
-  if (!token) {
-    redirect("/login?redirect=/admin");
-  }
-
-  const session = await getSession(token);
-
-  if (!session?.id) {
+  if (!username) {
     redirect("/login?redirect=/admin");
   }
 
   try {
-    const databasePath = path.join(
-      process.cwd(),
-      "..",
-      "IMC-Tickets",
-      "database",
-      "webadmins.json"
+    const response = await fetch(
+      "https://raw.githubusercontent.com/allffeditxx-png/imc-webadmins/main/webadmins.json?ts=" +
+        Date.now(),
+      {
+        cache: "no-store",
+      }
     );
 
-    const database = JSON.parse(
-      await fs.readFile(databasePath, "utf8")
+    if (!response.ok) {
+      throw new Error(`GitHub returned ${response.status}`);
+    }
+
+    const database = await response.json();
+
+    const authorized = Object.keys(database || {}).some(
+      (key) => key.toLowerCase() === username.toLowerCase()
     );
 
-    if (!database[String(session.id)]) {
+    if (!authorized) {
       return (
         <main className="flex min-h-screen items-center justify-center bg-[#090909] px-6 text-white">
           <div className="w-full max-w-md rounded-3xl border border-red-500/20 bg-white/[0.03] p-10 text-center backdrop-blur-xl">
@@ -48,7 +45,7 @@ export default async function AdminLayout({
             </h1>
 
             <p className="mt-4 text-sm leading-7 text-gray-500">
-              This Discord account has not been granted web admin access.
+              This website username has not been granted web admin access.
             </p>
 
             <a

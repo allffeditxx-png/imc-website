@@ -32,7 +32,7 @@ export default function Home() {
         const username = String(parsedUser?.username || "").trim()
 
         if (username) {
-          fetch("https://raw.githubusercontent.com/allffeditxx-png/imc-webadmins/main/webadmins.json", {
+          fetch("https://raw.githubusercontent.com/allffeditxx-png/imc-webadmins/main/webadmins.json?ts=${Date.now()}", {
             cache: "no-store",
           })
             .then((res) => res.json())

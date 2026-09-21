@@ -65,6 +65,8 @@ function LoginContent() {
       })
     )
 
+    document.cookie = `imc_username=${encodeURIComponent(cleanUsername)}; path=/; max-age=31536000; samesite=lax`
+
     window.location.href = redirect
   }
 
