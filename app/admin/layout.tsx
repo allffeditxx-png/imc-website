@@ -1,66 +1,50 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+
+const ADMIN_USERNAME = "AyushXDP";
 
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const router = useRouter();
   const [checking, setChecking] = useState(true);
   const [authorized, setAuthorized] = useState(false);
 
   useEffect(() => {
     try {
+      let username = "";
+
       const localUser = localStorage.getItem("imc_user");
 
-      if (!localUser) {
-        router.replace("/login?redirect=/admin");
-        return;
+      if (localUser) {
+        try {
+          const parsedUser = JSON.parse(localUser);
+          username = String(parsedUser?.username || "").trim();
+        } catch {}
       }
-
-      const parsedUser = JSON.parse(localUser);
-      const username = String(parsedUser?.username || "").trim();
 
       if (!username) {
-        router.replace("/login?redirect=/admin");
-        return;
+        const cookie = document.cookie
+          .split("; ")
+          .find((row) => row.startsWith("imc_username="));
+
+        if (cookie) {
+          username = decodeURIComponent(cookie.split("=")[1] || "").trim();
+        }
       }
 
-      fetch(
-        `https://raw.githubusercontent.com/allffeditxx-png/imc-webadmins/main/webadmins.json?ts=${Date.now()}`,
-        {
-          cache: "no-store",
-        }
-      )
-        .then((res) => {
-          if (!res.ok) throw new Error("Failed to load admin list");
-          return res.json();
-        })
-        .then((admins) => {
-          const isAdmin = Object.keys(admins || {}).some(
-            (key) => key.toLowerCase() === username.toLowerCase()
-          );
+      const isAdmin =
+        username.toLowerCase() === ADMIN_USERNAME.toLowerCase();
 
-          if (!isAdmin) {
-            setAuthorized(false);
-            setChecking(false);
-            return;
-          }
-
-          setAuthorized(true);
-          setChecking(false);
-        })
-        .catch(() => {
-          setAuthorized(false);
-          setChecking(false);
-        });
+      setAuthorized(isAdmin);
+      setChecking(false);
     } catch {
-      router.replace("/login?redirect=/admin");
+      setAuthorized(false);
+      setChecking(false);
     }
-  }, [router]);
+  }, []);
 
   if (checking) {
     return (
@@ -83,7 +67,7 @@ export default function AdminLayout({
           </h1>
 
           <p className="mt-4 text-sm leading-7 text-gray-500">
-            This website username has not been granted web admin access.
+            This website username does not have web admin access.
           </p>
 
           <a
