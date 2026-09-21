@@ -13,9 +13,22 @@ function LoginContent() {
       : redirect
 
   const [registerOpen, setRegisterOpen] = useState(false)
+  const [loginOpen, setLoginOpen] = useState(false)
+
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
+
+  const hashPassword = async (value: string) => {
+    const encoder = new TextEncoder()
+    const data = encoder.encode(value)
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data)
+    const hashArray = Array.from(new Uint8Array(hashBuffer))
+
+    return hashArray
+      .map(byte => byte.toString(16).padStart(2, "0"))
+      .join("")
+  }
 
   const register = async () => {
     const cleanUsername = username.trim()
@@ -42,32 +55,68 @@ function LoginContent() {
       return
     }
 
-    const encoder = new TextEncoder()
-    const data = encoder.encode(password)
-    const hashBuffer = await crypto.subtle.digest("SHA-256", data)
-    const hashArray = Array.from(new Uint8Array(hashBuffer))
-    const passwordHash = hashArray
-      .map(byte => byte.toString(16).padStart(2, "0"))
-      .join("")
+    const passwordHash = await hashPassword(password)
 
     localStorage.setItem(
       "imc_account",
       JSON.stringify({
         username: cleanUsername,
-        passwordHash
+        passwordHash,
       })
     )
 
     localStorage.setItem(
       "imc_user",
       JSON.stringify({
-        username: cleanUsername
+        username: cleanUsername,
       })
     )
 
     document.cookie = `imc_username=${encodeURIComponent(cleanUsername)}; path=/; max-age=31536000; samesite=lax`
 
     window.location.href = redirect
+  }
+
+  const login = async () => {
+    const cleanUsername = username.trim()
+
+    if (!cleanUsername || !password) {
+      setError("Enter your username and password.")
+      return
+    }
+
+    const stored = localStorage.getItem("imc_account")
+
+    if (!stored) {
+      setError("No account is registered on this browser.")
+      return
+    }
+
+    try {
+      const account = JSON.parse(stored)
+      const passwordHash = await hashPassword(password)
+
+      if (
+        String(account.username).toLowerCase() !== cleanUsername.toLowerCase() ||
+        account.passwordHash !== passwordHash
+      ) {
+        setError("Incorrect username or password.")
+        return
+      }
+
+      localStorage.setItem(
+        "imc_user",
+        JSON.stringify({
+          username: account.username,
+        })
+      )
+
+      document.cookie = `imc_username=${encodeURIComponent(account.username)}; path=/; max-age=31536000; samesite=lax`
+
+      window.location.href = redirect
+    } catch {
+      setError("Unable to log in.")
+    }
   }
 
   return (
@@ -107,6 +156,21 @@ function LoginContent() {
             type="button"
             onClick={() => {
               setError("")
+              setUsername("")
+              setPassword("")
+              setLoginOpen(true)
+            }}
+            className="mt-3 block w-full rounded-xl border border-white/10 bg-white/[0.03] px-6 py-3.5 font-semibold text-gray-300 transition-all duration-300 hover:border-white/20 hover:bg-white/[0.06] hover:text-white"
+          >
+            Login
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setError("")
+              setUsername("")
+              setPassword("")
               setRegisterOpen(true)
             }}
             className="mt-3 block w-full rounded-xl border border-red-500/30 bg-red-500/5 px-6 py-3.5 font-semibold text-red-400 transition-all duration-300 hover:border-red-500/60 hover:bg-red-500/10"
@@ -182,6 +246,63 @@ function LoginContent() {
                 className="flex-1 rounded-xl bg-gradient-to-r from-red-700 via-red-600 to-red-500 px-4 py-3 font-semibold"
               >
                 Create Account
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {loginOpen && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 px-6 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-3xl border border-white/10 bg-[#0b0b0b] p-8 shadow-[0_0_50px_rgba(220,38,38,0.2)]">
+            <h2 className="text-2xl font-black">
+              Login to your account
+            </h2>
+
+            <p className="mt-2 text-sm text-gray-500">
+              Use the account registered on this browser.
+            </p>
+
+            <input
+              type="text"
+              placeholder="Username"
+              value={username}
+              onChange={e => setUsername(e.target.value)}
+              className="mt-6 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none placeholder:text-gray-600 focus:border-red-500/50"
+            />
+
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              className="mt-3 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none placeholder:text-gray-600 focus:border-red-500/50"
+            />
+
+            {error && (
+              <p className="mt-3 text-sm text-red-400">
+                {error}
+              </p>
+            )}
+
+            <div className="mt-6 flex gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setLoginOpen(false)
+                  setError("")
+                }}
+                className="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-3 font-semibold text-gray-400 transition hover:bg-white/10 hover:text-white"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={login}
+                className="flex-1 rounded-xl bg-gradient-to-r from-red-700 via-red-600 to-red-500 px-4 py-3 font-semibold"
+              >
+                Login
               </button>
             </div>
           </div>
