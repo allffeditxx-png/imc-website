@@ -8,6 +8,7 @@ export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [pageReady, setPageReady] = useState(false)
   const [authenticated, setAuthenticated] = useState(false)
+  const [isWebAdmin, setIsWebAdmin] = useState(false)
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -22,6 +23,34 @@ export default function Home() {
       .catch(() => {
         setAuthenticated(false)
       })
+
+    try {
+      const localUser = localStorage.getItem("imc_user")
+
+      if (localUser) {
+        const parsedUser = JSON.parse(localUser)
+        const username = String(parsedUser?.username || "").trim()
+
+        if (username) {
+          fetch("https://raw.githubusercontent.com/allffeditxx-png/imc-webadmins/main/webadmins.json", {
+            cache: "no-store",
+          })
+            .then((res) => res.json())
+            .then((admins) => {
+              const authorized = Object.keys(admins || {}).some(
+                (key) => key.toLowerCase() === username.toLowerCase()
+              )
+
+              setIsWebAdmin(authorized)
+            })
+            .catch(() => {
+              setIsWebAdmin(false)
+            })
+        }
+      }
+    } catch {
+      setIsWebAdmin(false)
+    }
 
     return () => clearTimeout(timer)
   }, [])
@@ -202,12 +231,14 @@ export default function Home() {
               Discord
             </a>
 
-            <a
-              href="/admin"
-              className="rounded-lg px-4 py-2 text-sm text-gray-400 transition hover:bg-white/5 hover:text-white"
-            >
-              Admin Panel
-            </a>
+            {isWebAdmin && (
+              <a
+                href="/admin"
+                className="rounded-lg px-4 py-2 text-sm text-gray-400 transition hover:bg-white/5 hover:text-white"
+              >
+                Admin Panel
+              </a>
+            )}
 
           </div>
 
@@ -365,7 +396,7 @@ export default function Home() {
 
             <button
               type="button"
-              onClick={() => {}}
+              onClick={() => setMenuOpen(true)}
               className="group relative overflow-hidden rounded-xl bg-gradient-to-r from-red-700 via-red-600 to-red-500 px-7 py-3.5 font-semibold shadow-[0_0_30px_rgba(220,38,38,0.25)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_40px_rgba(220,38,38,0.5)]"
             >
               <span className="relative z-10">
