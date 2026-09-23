@@ -194,6 +194,15 @@ export async function GET() {
         continue;
       }
 
+      // A player must have at least one recorded tier result.
+      // Tier roles alone are not enough to appear on the website.
+      if (
+        !Array.isArray(player.results) ||
+        player.results.length === 0
+      ) {
+        continue;
+      }
+
       const memberRoles = new Set<string>(
         Array.isArray(member.roles)
           ? member.roles
