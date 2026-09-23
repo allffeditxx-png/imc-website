@@ -203,28 +203,37 @@ export async function GET() {
       const validGamemodes: Record<string, string> = {};
 
       /*
-       * Discord roles are the source of truth for tiers.
-       * The database is only used to identify registered players
-       * and provide their region/user information.
+       * Discord tier roles are the source of truth.
+       * Only exact TIER • GAMEMODE roles are accepted.
+       * All unrelated Discord roles are ignored.
        */
       for (const gamemode of ALLOWED_GAMEMODES) {
-        for (const tier of TIERS) {
-          const requiredRole = getRequiredRole(
-            tier,
-            gamemode
-          );
+        const roleGamemode = (
+          ROLE_GAMEMODES[gamemode] || gamemode
+        ).toLowerCase();
 
-          const hasRole = [...memberRoles].some(
-            roleId =>
-              roleNames.get(roleId) ===
-              requiredRole
-          );
+        for (const tier of TIERS) {
+          const requiredRole = `${tier} • ${roleGamemode}`.toLowerCase();
+
+          const hasRole = [...memberRoles].some(roleId => {
+            const roleName = roleNames.get(roleId);
+
+            return roleName === requiredRole;
+          });
 
           if (hasRole) {
             validGamemodes[gamemode] = tier;
             break;
           }
         }
+      }
+
+      /*
+       * A player must have at least one valid tier role.
+       * Players with no tier roles are excluded.
+       */
+      if (Object.keys(validGamemodes).length === 0) {
+        continue;
       }
 
       if (Object.keys(validGamemodes).length === 0) {
