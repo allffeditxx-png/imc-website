@@ -7,6 +7,13 @@ export async function middleware(request: NextRequest) {
   }
 
   const token = request.cookies.get("imc_session")?.value;
+  const localUsername = request.cookies.get("imc_username")?.value;
+
+  // Local browser accounts are authenticated through imc_username.
+  // Admin authorization is handled separately by the admin layout.
+  if (localUsername) {
+    return NextResponse.next();
+  }
 
   if (!token) {
     const loginUrl = new URL("/login", request.url);

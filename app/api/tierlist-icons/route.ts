@@ -2,6 +2,32 @@ import { NextResponse } from "next/server";
 import { promises as fs } from "fs";
 import path from "path";
 
+
+export async function GET() {
+  const gamemodes = [
+    "CPvP",
+    "Netherite Pot",
+    "Pot",
+    "Sword",
+    "Axe",
+    "Mace",
+    "UHC",
+    "SMP",
+  ];
+
+  const icons = Object.fromEntries(
+    gamemodes.map((gamemode) => [
+      gamemode,
+      `/tierlist-icons/${gamemode}.png`,
+    ])
+  );
+
+  return NextResponse.json({
+    success: true,
+    icons,
+  });
+}
+
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();

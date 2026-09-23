@@ -21,16 +21,25 @@ const POINTS: Record<string, number> = {
 
 const ROLE_GAMEMODES: Record<string, string> = {
   Sword: "Sword",
-  Axe: "Axe",
   NethPot: "Netherite Pot",
-  DPot: "Pot",
   CPvP: "CPvP",
-  DMace: "Mace",
-  "Elytra Mace": "Elytra Mace",
-  "TNT Cart": "TNT Cart",
   UHC: "UHC",
+  DPot: "Pot",
   SMP: "SMP",
+  Axe: "Axe",
+  Mace: "Mace",
 };
+
+const ALLOWED_GAMEMODES = new Set([
+  "Sword",
+  "NethPot",
+  "CPvP",
+  "UHC",
+  "DPot",
+  "SMP",
+  "Axe",
+  "Mace",
+]);
 
 function getRequiredRole(tier: string, gamemode: string) {
   const roleGamemode = ROLE_GAMEMODES[gamemode] || gamemode;
@@ -130,86 +139,93 @@ export async function GET() {
       );
     }
 
-    const validPlayers = [];
+    const playerEntries = (
+      Object.entries(database) as [string, any][]
+    ).filter(
+      ([, player]) => player?.userId
+    );
 
-    for (const [username, player] of Object.entries(
-      database
-    ) as [string, any][]) {
-      if (!player?.userId) continue;
-
-      const memberResponse = await discordFetch(
-        `/guilds/${GUILD_ID}/members/${player.userId}`
-      );
-
-      // Confirmed that the user is not in the guild.
-      if (
-        !memberResponse ||
-        memberResponse.status === 404
-      ) {
-        continue;
-      }
-
-      if (
-        memberResponse.status !== 200 ||
-        !memberResponse.data
-      ) {
-        // A temporary failure should never silently remove
-        // this player from the tierlist.
-        throw new Error(
-          `Failed to verify Discord member ${player.userId}.`
-        );
-      }
-
-      const member = memberResponse.data;
-      const memberRoles = new Set<string>(
-        Array.isArray(member.roles)
-          ? member.roles
-          : []
-      );
-
-      const validGamemodes: Record<string, string> = {};
-
-      for (const [gamemode, tier] of Object.entries(
-        player.gamemodes || {}
-      ) as [string, string][]) {
-        const requiredRole = getRequiredRole(
-          tier as string,
-          gamemode as string
+    const results = await Promise.all(
+      playerEntries.map(async ([username, player]) => {
+        const memberResponse = await discordFetch(
+          `/guilds/${GUILD_ID}/members/${player.userId}`
         );
 
-        const hasRole = [...memberRoles].some(
-          roleId =>
-            roleNames.get(roleId as string) ===
-            requiredRole
-        );
-
-        if (hasRole) {
-          validGamemodes[gamemode] = tier;
+        if (
+          !memberResponse ||
+          memberResponse.status === 404
+        ) {
+          return null;
         }
-      }
 
-      if (
-        Object.keys(validGamemodes).length === 0
-      ) {
-        continue;
-      }
+        if (
+          memberResponse.status !== 200 ||
+          !memberResponse.data
+        ) {
+          throw new Error(
+            `Failed to verify Discord member ${player.userId}.`
+          );
+        }
 
-      const score = Object.values(
-        validGamemodes
-      ).reduce(
-        (total, tier) =>
-          total + (POINTS[tier] || 0),
-        0
-      );
+        const member = memberResponse.data;
 
-      validPlayers.push({
-        username,
-        userId: player.userId,
-        region: player.region || "N/A",
-        gamemodes: validGamemodes,
-        score,
-      });
-    }
+        const memberRoles = new Set<string>(
+          Array.isArray(member.roles)
+            ? member.roles
+            : []
+        );
+
+        const validGamemodes: Record<string, string> = {};
+
+        for (const [gamemode, tier] of Object.entries(
+          player.gamemodes || {}
+        ) as [string, string][]) {
+          if (!ALLOWED_GAMEMODES.has(gamemode)) {
+            continue;
+          }
+
+          const requiredRole = getRequiredRole(
+            tier,
+            gamemode
+          );
+
+          const hasRole = [...memberRoles].some(
+            roleId =>
+              roleNames.get(roleId) ===
+              requiredRole
+          );
+
+          if (hasRole) {
+            validGamemodes[gamemode] = tier;
+          }
+        }
+
+        if (Object.keys(validGamemodes).length === 0) {
+          return null;
+        }
+
+        const score = Object.values(
+          validGamemodes
+        ).reduce(
+          (total, tier) =>
+            total + (POINTS[tier] || 0),
+          0
+        );
+
+        return {
+          username,
+          userId: player.userId,
+          region: player.region || "N/A",
+          gamemodes: validGamemodes,
+          score,
+        };
+      })
+    );
+
+    const validPlayers = results.filter(
+      (player): player is NonNullable<typeof player> =>
+        player !== null
+    );
 
     validPlayers.sort(
       (a, b) => b.score - a.score

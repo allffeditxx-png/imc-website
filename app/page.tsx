@@ -396,7 +396,15 @@ export default function Home() {
 
             <button
               type="button"
-              onClick={() => setMenuOpen(true)}
+              onClick={() => {
+              if (window.innerWidth >= 768) {
+                document.getElementById("explore-imc")?.scrollIntoView({
+                  behavior: "smooth",
+                });
+              } else {
+                setMenuOpen(true);
+              }
+            }}
               className="group relative overflow-hidden rounded-xl bg-gradient-to-r from-red-700 via-red-600 to-red-500 px-7 py-3.5 font-semibold shadow-[0_0_30px_rgba(220,38,38,0.25)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_40px_rgba(220,38,38,0.5)]"
             >
               <span className="relative z-10">
@@ -421,7 +429,7 @@ export default function Home() {
       </section>
 
       {/* Features */}
-      <section className="relative overflow-hidden px-6 py-24">
+      <section id="explore-imc" className="relative overflow-hidden px-6 py-24">
 
         <div className="absolute inset-0 bg-gradient-to-b from-black via-[#090000] to-black" />
 
