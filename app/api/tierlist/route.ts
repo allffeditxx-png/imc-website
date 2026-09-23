@@ -30,7 +30,7 @@ const ROLE_GAMEMODES: Record<string, string> = {
   Mace: "Mace",
 };
 
-const ALLOWED_GAMEMODES = new Set([
+const ALLOWED_GAMEMODES = [
   "Sword",
   "NethPot",
   "CPvP",
@@ -39,7 +39,20 @@ const ALLOWED_GAMEMODES = new Set([
   "SMP",
   "Axe",
   "Mace",
-]);
+];
+
+const TIERS = [
+  "HT1",
+  "LT1",
+  "HT2",
+  "LT2",
+  "HT3",
+  "LT3",
+  "HT4",
+  "LT4",
+  "HT5",
+  "LT5",
+];
 
 function getRequiredRole(tier: string, gamemode: string) {
   const roleGamemode = ROLE_GAMEMODES[gamemode] || gamemode;
@@ -79,10 +92,7 @@ async function discordFetch(url: string, retries = 3) {
         };
       }
 
-      if (
-        response.status === 429 ||
-        response.status >= 500
-      ) {
+      if (response.status === 429 || response.status >= 500) {
         if (attempt < retries) {
           await new Promise(resolve =>
             setTimeout(resolve, attempt * 1000)
@@ -135,8 +145,7 @@ async function fetchAllGuildMembers() {
       break;
     }
 
-    after =
-      response.data[response.data.length - 1].user.id;
+    after = response.data[response.data.length - 1].user.id;
   }
 
   return members;
@@ -193,26 +202,28 @@ export async function GET() {
 
       const validGamemodes: Record<string, string> = {};
 
-      for (const [gamemode, tier] of Object.entries(
-        player.gamemodes || {}
-      ) as [string, string][]) {
-        if (!ALLOWED_GAMEMODES.has(gamemode)) {
-          continue;
-        }
+      /*
+       * Discord roles are the source of truth for tiers.
+       * The database is only used to identify registered players
+       * and provide their region/user information.
+       */
+      for (const gamemode of ALLOWED_GAMEMODES) {
+        for (const tier of TIERS) {
+          const requiredRole = getRequiredRole(
+            tier,
+            gamemode
+          );
 
-        const requiredRole = getRequiredRole(
-          tier,
-          gamemode
-        );
+          const hasRole = [...memberRoles].some(
+            roleId =>
+              roleNames.get(roleId) ===
+              requiredRole
+          );
 
-        const hasRole = [...memberRoles].some(
-          roleId =>
-            roleNames.get(roleId) ===
-            requiredRole
-        );
-
-        if (hasRole) {
-          validGamemodes[gamemode] = tier;
+          if (hasRole) {
+            validGamemodes[gamemode] = tier;
+            break;
+          }
         }
       }
 
