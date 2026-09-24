@@ -137,7 +137,18 @@ export async function GET() {
         username,
         userId: player.userId,
         region: player.region || "N/A",
-        gamemodes: validGamemodes,
+        gamemodes: Object.fromEntries(
+          Object.entries(validGamemodes).map(
+            ([gamemode, tier]) => [
+              gamemode === "NethPot"
+                ? "Netherite Pot"
+                : gamemode === "DPot"
+                ? "Pot"
+                : gamemode,
+              tier,
+            ]
+          )
+        ),
         score,
       });
     }
