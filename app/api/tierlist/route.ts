@@ -32,6 +32,48 @@ const ALLOWED_GAMEMODES = [
   "Mace",
 ];
 
+function normalizeGamemode(
+  gamemode: string
+): string | null {
+  const value = gamemode
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+
+  const map: Record<string, string> = {
+    sword: "Sword",
+    axe: "Axe",
+
+    nethpot: "NethPot",
+    "neth pot": "NethPot",
+    "neth-pot": "NethPot",
+    "netherite pot": "NethPot",
+    netheritepot: "NethPot",
+
+    cpvp: "CPvP",
+    crystal: "CPvP",
+
+    uhc: "UHC",
+
+    dpot: "DPot",
+    "d pot": "DPot",
+    "d-pot": "DPot",
+    "dia pot": "DPot",
+    "dia-pot": "DPot",
+    "diamond pot": "DPot",
+    pot: "DPot",
+
+    smp: "SMP",
+
+    mace: "Mace",
+    dmace: "Mace",
+    "d mace": "Mace",
+    "d-mace": "Mace",
+  };
+
+  return map[value] || null;
+}
+
 export async function GET() {
   try {
     const database = JSON.parse(
@@ -54,22 +96,42 @@ export async function GET() {
 
       const validGamemodes: Record<string, string> = {};
 
-      for (const gamemode of ALLOWED_GAMEMODES) {
-        const tier = player.gamemodes?.[gamemode];
+      for (const [
+        storedGamemode,
+        tier,
+      ] of Object.entries(
+        player.gamemodes || {}
+      ) as [string, string][]) {
+        const gamemode =
+          normalizeGamemode(storedGamemode);
 
-        if (tier && POINTS[tier] !== undefined) {
+        if (
+          !gamemode ||
+          !ALLOWED_GAMEMODES.includes(gamemode)
+        ) {
+          continue;
+        }
+
+        if (
+          tier &&
+          POINTS[tier] !== undefined
+        ) {
           validGamemodes[gamemode] = tier;
         }
       }
 
-      if (Object.keys(validGamemodes).length === 0) {
+      if (
+        Object.keys(validGamemodes).length === 0
+      ) {
         continue;
       }
 
-      const score = Object.values(validGamemodes).reduce(
-        (total, tier) => total + POINTS[tier],
-        0
-      );
+      const score =
+        Object.values(validGamemodes).reduce(
+          (total, tier) =>
+            total + POINTS[tier],
+          0
+        );
 
       validPlayers.push({
         username,
