@@ -150,9 +150,32 @@ export default function AdminPage() {
             </button>
           </div>
 
+
         </div>
 
-      </section>
+      
+        <div className="mt-10 rounded-3xl border border-purple-500/20 bg-gradient-to-br from-purple-950/25 via-white/[0.02] to-cyan-950/10 p-7">
+          <p className="text-xs font-bold uppercase tracking-[0.25em] text-purple-400">
+            Ranked
+          </p>
+
+          <h2 className="mt-3 text-2xl font-bold">
+            Ranked Rubrics
+          </h2>
+
+          <p className="mt-3 text-sm leading-7 text-gray-500">
+            Create and manage testing standards, requirements, scoring,
+            formats, and rules for every ranked gamemode.
+          </p>
+
+          <a
+            href="/admin/rubrics"
+            className="mt-6 inline-block rounded-xl bg-purple-600 px-5 py-3 text-sm font-semibold transition hover:bg-purple-500"
+          >
+            Manage Rubrics →
+          </a>
+        </div>
+</section>
 
     </main>
   )

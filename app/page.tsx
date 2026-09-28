@@ -171,16 +171,23 @@ export default function Home() {
         />
       </div>
 
-      <main className="min-h-screen bg-black text-white">
+      <main className="min-h-screen bg-[#050505] text-white selection:bg-red-500/30">
 
       <FallingParticles />
 
+      {/* IMC Atmospheric Lighting */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        <div className="absolute left-1/2 top-[-18rem] h-[42rem] w-[42rem] -translate-x-1/2 rounded-full bg-red-600/[0.10] blur-[140px]" />
+        <div className="absolute right-[-12rem] top-[25%] h-[30rem] w-[30rem] rounded-full bg-orange-500/[0.07] blur-[130px]" />
+        <div className="absolute bottom-[-15rem] left-[-10rem] h-[30rem] w-[30rem] rounded-full bg-red-900/[0.10] blur-[130px]" />
+      </div>
+
       {/* Navbar */}
-      <nav className="fixed left-0 right-0 top-0 z-[100] border-b border-white/10 bg-black/60 px-5 py-4 backdrop-blur-xl">
+      <nav className="fixed left-0 right-0 top-0 z-[100] border-b border-white/[0.06] bg-black/55 px-5 py-4 backdrop-blur-2xl shadow-[0_8px_40px_rgba(0,0,0,0.45)]">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
 
           <a href="/" className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-red-700 to-red-500 font-black shadow-lg shadow-red-900/30">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-red-400/30 bg-gradient-to-br from-red-600 via-red-500 to-orange-500 font-black shadow-[0_0_25px_rgba(239,68,68,0.35)] transition-all duration-300 hover:scale-105 hover:shadow-[0_0_35px_rgba(239,68,68,0.55)]">
               IMC
             </div>
 
@@ -199,34 +206,41 @@ export default function Home() {
 
             <a
               href="/"
-              className="rounded-lg bg-red-500/10 px-4 py-2 text-sm font-medium text-red-400"
+              className="rounded-xl border border-red-400/25 bg-red-500/10 px-4 py-2 text-sm font-semibold text-red-200 shadow-[0_0_22px_rgba(239,68,68,0.18)] transition-all duration-300 hover:bg-red-500/20 hover:text-white hover:shadow-[0_0_32px_rgba(239,68,68,0.4)]"
             >
               Home
             </a>
 
             <a
               href="/about"
-              className="rounded-lg px-4 py-2 text-sm text-gray-400 transition hover:bg-white/5 hover:text-white"
+              className="rounded-xl px-4 py-2 text-sm text-gray-400 transition-all duration-300 hover:bg-white/[0.06] hover:text-white hover:-translate-y-0.5"
             >
               About
             </a>
 
             <a
               href="/downloads"
-              className="rounded-lg px-4 py-2 text-sm text-gray-400 transition hover:bg-white/5 hover:text-white"
+              className="rounded-xl px-4 py-2 text-sm text-gray-400 transition-all duration-300 hover:bg-white/[0.06] hover:text-white hover:-translate-y-0.5"
             >
               Downloads
             </a>
 
             <a
               href="/dashboard"
-              className="rounded-lg px-4 py-2 text-sm text-gray-400 transition hover:bg-white/5 hover:text-white"
+              className="rounded-xl px-4 py-2 text-sm text-gray-400 transition-all duration-300 hover:bg-white/[0.06] hover:text-white hover:-translate-y-0.5"
             >
               Tierlist
             </a>
+
+            <a
+              href="/ranked-rubrics"
+              className="rounded-xl px-4 py-2 text-sm text-gray-400 transition-all duration-300 hover:bg-white/[0.06] hover:text-white hover:-translate-y-0.5"
+            >
+              Ranked Rubrics
+            </a>
             <a
               href="/community"
-              className="rounded-lg px-4 py-2 text-sm text-gray-400 transition hover:bg-white/5 hover:text-white"
+              className="rounded-xl px-4 py-2 text-sm text-gray-400 transition-all duration-300 hover:bg-white/[0.06] hover:text-white hover:-translate-y-0.5"
             >
               Discord
             </a>
@@ -234,7 +248,7 @@ export default function Home() {
             {isWebAdmin && (
               <a
                 href="/admin"
-                className="rounded-lg px-4 py-2 text-sm text-gray-400 transition hover:bg-white/5 hover:text-white"
+                className="rounded-xl px-4 py-2 text-sm text-gray-400 transition-all duration-300 hover:bg-white/[0.06] hover:text-white hover:-translate-y-0.5"
               >
                 Admin Panel
               </a>
@@ -250,7 +264,7 @@ export default function Home() {
             <button
               onClick={toggleMenu}
               aria-label="Toggle menu"
-              className="relative z-[120] flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/5 md:hidden"
+              className="relative z-[120] flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/5 shadow-[0_0_20px_rgba(239,68,68,0.08)] transition-all duration-300 hover:border-yellow-400/60 hover:shadow-[0_0_45px_rgba(250,204,21,0.4),0_0_90px_rgba(245,158,11,0.15)] hover:bg-red-500/10 hover:shadow-[0_0_28px_rgba(239,68,68,0.25)] md:hidden"
             >
               <span className="relative block h-5 w-6">
 
@@ -320,6 +334,7 @@ export default function Home() {
               ["About", "/about"],
               ["Downloads", "/downloads"],
               ["Tierlist", "/tierlist"],
+              ["Ranked Rubrics", "/ranked-rubrics"],
               ["Discord", "/community"],
               ["Admin Panel", "/admin"],
             ].map(([name, href], index) => (
@@ -327,7 +342,7 @@ export default function Home() {
                 key={name}
                 href={href}
                 onClick={closeMenu}
-                className={`flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.035] px-5 py-4 text-base font-semibold text-gray-300 transition-all duration-500 hover:border-red-500/40 hover:bg-red-500/10 hover:text-white ${
+                className={`flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.035] px-5 py-4 text-base font-semibold text-gray-300 transition-all duration-500 hover:border-cyan-500/40 hover:bg-cyan-500/10 hover:text-cyan-200 hover:shadow-[0_0_28px_rgba(6,182,212,0.18)] ${
                   menuOpen
                     ? "translate-x-0 opacity-100"
                     : "translate-x-10 opacity-0"
@@ -349,7 +364,7 @@ export default function Home() {
               <a
                 href="/api/auth/logout"
                 onClick={closeMenu}
-                className="block rounded-2xl border border-red-500/30 bg-red-500/5 px-5 py-3 text-center text-sm font-semibold text-red-400 transition hover:border-red-500/60 hover:bg-red-500/10 hover:text-white"
+                className="block rounded-2xl border border-red-500/30 bg-red-500/5 px-5 py-3 text-center text-sm font-semibold text-red-400 transition hover:border-red-500/60 hover:bg-red-500/10 hover:text-white hover:shadow-[0_0_30px_rgba(239,68,68,0.25)]"
               >
                 Logout
               </a>
@@ -357,7 +372,7 @@ export default function Home() {
               <a
                 href="/login"
                 onClick={closeMenu}
-                className="block rounded-2xl border border-red-500/30 bg-red-500/5 px-5 py-3 text-center text-sm font-semibold text-red-400 transition hover:border-red-500/60 hover:bg-red-500/10 hover:text-white"
+                className="block rounded-2xl border border-red-500/30 bg-red-500/5 px-5 py-3 text-center text-sm font-semibold text-red-400 transition hover:border-red-500/60 hover:bg-red-500/10 hover:text-white hover:shadow-[0_0_30px_rgba(239,68,68,0.25)]"
               >
                 Login
               </a>
@@ -367,182 +382,199 @@ export default function Home() {
       </div>
 
       {/* Hero */}
+      <section className="relative flex min-h-[92vh] items-center justify-center overflow-hidden px-6 pt-28 text-center">
 
+        {/* Hero atmosphere */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(220,38,38,0.18),transparent_32%),radial-gradient(circle_at_80%_55%,rgba(245,158,11,0.08),transparent_25%),linear-gradient(180deg,#090909_0%,#050505_65%,#020202_100%)]" />
 
-      <section className="relative flex min-h-screen items-center justify-center overflow-hidden px-6 pt-24 text-center">
+        <div className="absolute left-1/2 top-[38%] h-[34rem] w-[34rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-red-600/[0.08] blur-[120px]" />
 
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(220,38,38,0.35),transparent_45%),linear-gradient(to_bottom,#160000,#050505_55%,#000)]" />
+        {/* Decorative lines */}
+        <div className="absolute left-0 right-0 top-1/2 h-px bg-gradient-to-r from-transparent via-red-500/20 to-transparent" />
+        <div className="absolute left-1/2 top-24 h-[70%] w-px bg-gradient-to-b from-transparent via-red-500/[0.08] to-transparent" />
 
-        <div className="absolute left-1/2 top-1/2 h-96 w-96 -translate-x-1/2 -translate-y-1/2 rounded-full bg-red-600/10 blur-3xl" />
+        <div className="relative z-10 w-full max-w-5xl">
 
-        <div className="relative z-10 max-w-3xl">
+          <div className="mx-auto mb-7 flex w-fit items-center gap-3 rounded-full border border-red-500/20 bg-red-500/[0.05] px-4 py-2 backdrop-blur-xl shadow-[0_0_30px_rgba(239,68,68,0.08)]">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-red-500 shadow-[0_0_12px_rgba(239,68,68,0.9)]" />
+            <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-red-300">
+              Minecraft PvP Tierlist
+            </span>
+          </div>
 
-          <p className="mb-4 text-sm uppercase tracking-[0.35em] text-red-500">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.45em] text-gray-500">
             International Minecraft Community
           </p>
 
-          <h1 className="text-5xl font-black tracking-tight md:text-7xl">
-            Welcome to{" "}
-            <span className="bg-gradient-to-r from-red-400 via-red-600 to-red-900 bg-clip-text text-transparent">
-              IMC
+          <h1 className="text-6xl font-black tracking-[-0.04em] sm:text-7xl md:text-9xl">
+            <span className="text-white">IMC</span>
+            <span className="ml-3 bg-gradient-to-r from-red-400 via-red-500 to-orange-400 bg-clip-text text-transparent drop-shadow-[0_0_35px_rgba(239,68,68,0.35)]">
+              TIERLIST
             </span>
           </h1>
 
-          <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-gray-400">
-            A clean and modern hub for everything related to the IMC community.
+          <p className="mx-auto mt-7 max-w-2xl text-base leading-7 text-gray-400 sm:text-lg">
+            Test your skills. Earn your tier. Build your legacy.
+            <br className="hidden sm:block" />
+            The competitive Minecraft PvP community built around skill and fair testing.
           </p>
 
           <div className="mt-10 flex flex-wrap justify-center gap-4">
-
             <button
               type="button"
               onClick={() => {
-              if (window.innerWidth >= 768) {
-                document.getElementById("explore-imc")?.scrollIntoView({
-                  behavior: "smooth",
-                });
-              } else {
-                setMenuOpen(true);
-              }
-            }}
-              className="group relative overflow-hidden rounded-xl bg-gradient-to-r from-red-700 via-red-600 to-red-500 px-7 py-3.5 font-semibold shadow-[0_0_30px_rgba(220,38,38,0.25)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_40px_rgba(220,38,38,0.5)]"
+                if (window.innerWidth >= 768) {
+                  window.scrollTo({ top: window.innerHeight, behavior: "smooth" });
+                } else {
+                  setMenuOpen(true);
+                }
+              }}
+              className="group relative overflow-hidden rounded-xl border border-red-400/30 bg-red-600 px-8 py-3.5 font-bold text-white shadow-[0_0_25px_rgba(239,68,68,0.25)] transition-all duration-300 hover:-translate-y-1 hover:border-red-300 hover:bg-red-500 hover:shadow-[0_0_45px_rgba(239,68,68,0.5),0_0_80px_rgba(245,158,11,0.12)]"
             >
-              <span className="relative z-10">
-                Explore IMC
-              </span>
-
+              <span className="relative z-10">Explore IMC</span>
               <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
             </button>
 
             <a
               href="https://discord.gg/Wyd6Z3wJeN"
-              className="group rounded-xl border border-red-500/30 bg-white/[0.04] px-7 py-3.5 font-semibold backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-red-500/70 hover:bg-red-500/10"
+              className="group rounded-xl border border-white/10 bg-white/[0.04] px-8 py-3.5 font-bold text-gray-200 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-indigo-400/50 hover:bg-indigo-500/10 hover:text-white hover:shadow-[0_0_35px_rgba(99,102,241,0.22)]"
             >
-              Join Discord
+              Join Community
               <span className="ml-2 inline-block transition-transform duration-300 group-hover:translate-x-1">
                 →
               </span>
             </a>
-
           </div>
+
+          {/* IMC Core */} 
+          <section className="relative mt-24 overflow-hidden rounded-[2rem] border border-white/[0.08] bg-white/[0.02] p-8 backdrop-blur-xl sm:p-12">
+            <div className="absolute -right-32 -top-32 h-72 w-72 rounded-full bg-red-600/[0.08] blur-[100px]" />
+            <div className="absolute -bottom-32 -left-32 h-72 w-72 rounded-full bg-orange-500/[0.05] blur-[100px]" />
+
+            <div className="relative z-10">
+              <p className="text-xs font-bold uppercase tracking-[0.35em] text-red-500">
+                The IMC Standard
+              </p>
+
+              <h2 className="mt-4 max-w-3xl text-3xl font-black tracking-tight sm:text-5xl">
+                Built for players who want to prove their skill.
+              </h2>
+
+              <p className="mt-5 max-w-2xl text-sm leading-7 text-gray-500 sm:text-base">
+                IMC brings competitive Minecraft players together through structured
+                testing, transparent tiers and a community built around competition.
+              </p>
+
+              <div className="mt-12 grid gap-4 md:grid-cols-3">
+                <div className="group rounded-2xl border border-white/[0.08] bg-black/30 p-7 transition-all duration-500 hover:-translate-y-1 hover:border-red-500/30 hover:bg-red-500/[0.035] hover:shadow-[0_20px_60px_rgba(239,68,68,0.10)]">
+                  <p className="text-sm font-black uppercase tracking-[0.2em] text-red-400">
+                    01 / Test
+                  </p>
+                  <h3 className="mt-4 text-2xl font-black">Show your skill</h3>
+                  <p className="mt-3 text-sm leading-6 text-gray-500">
+                    Get tested through competitive Minecraft gameplay and establish
+                    where your skill belongs.
+                  </p>
+                </div>
+
+                <div className="group rounded-2xl border border-white/[0.08] bg-black/30 p-7 transition-all duration-500 hover:-translate-y-1 hover:border-orange-400/30 hover:bg-orange-500/[0.035] hover:shadow-[0_20px_60px_rgba(245,158,11,0.10)]">
+                  <p className="text-sm font-black uppercase tracking-[0.2em] text-orange-400">
+                    02 / Earn
+                  </p>
+                  <h3 className="mt-4 text-2xl font-black">Earn your tier</h3>
+                  <p className="mt-3 text-sm leading-6 text-gray-500">
+                    Build your competitive profile and track your progression across
+                    the IMC tier system.
+                  </p>
+                </div>
+
+                <div className="group rounded-2xl border border-white/[0.08] bg-black/30 p-7 transition-all duration-500 hover:-translate-y-1 hover:border-indigo-400/30 hover:bg-indigo-500/[0.035] hover:shadow-[0_20px_60px_rgba(99,102,241,0.10)]">
+                  <p className="text-sm font-black uppercase tracking-[0.2em] text-indigo-400">
+                    03 / Compete
+                  </p>
+                  <h3 className="mt-4 text-2xl font-black">Join the scene</h3>
+                  <p className="mt-3 text-sm leading-6 text-gray-500">
+                    Connect with competitive players, take part in events and become
+                    part of the International Minecraft Community.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-5 grid gap-5 md:grid-cols-2">
+                <a
+                  href="/tierlist"
+                  className="group rounded-2xl border border-white/[0.08] bg-black/25 p-7 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-red-500/30 hover:bg-red-500/[0.035] hover:shadow-[0_15px_45px_rgba(239,68,68,0.10)]"
+                >
+                  <p className="text-xs font-bold uppercase tracking-[0.25em] text-red-500">
+                    Rankings
+                  </p>
+                  <h3 className="mt-3 text-2xl font-black">Player Tierlist</h3>
+                  <p className="mt-3 text-sm leading-6 text-gray-500">
+                    Explore players, tiers and competitive standings across IMC.
+                  </p>
+                  <p className="mt-5 text-sm font-bold text-red-400 transition-transform group-hover:translate-x-1">
+                    View rankings →
+                  </p>
+                </a>
+
+                <a
+                  href="/ranked-rubrics"
+                  className="group rounded-2xl border border-white/[0.08] bg-black/25 p-7 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-orange-400/30 hover:bg-orange-500/[0.035] hover:shadow-[0_15px_45px_rgba(245,158,11,0.10)]"
+                >
+                  <p className="text-xs font-bold uppercase tracking-[0.25em] text-orange-400">
+                    Standards
+                  </p>
+                  <h3 className="mt-3 text-2xl font-black">Ranked Rubrics</h3>
+                  <p className="mt-3 text-sm leading-6 text-gray-500">
+                    Understand the testing standards, scoring requirements and rules.
+                  </p>
+                  <p className="mt-5 text-sm font-bold text-orange-400 transition-transform group-hover:translate-x-1">
+                    Explore rubrics →
+                  </p>
+                </a>
+              </div>
+
+              <div className="mt-5 grid gap-5 md:grid-cols-2">
+                <a
+                  href="/about"
+                  className="group rounded-2xl border border-white/[0.08] bg-black/25 p-7 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-white/20 hover:bg-white/[0.04] hover:shadow-[0_15px_45px_rgba(255,255,255,0.05)]"
+                >
+                  <p className="text-xs font-bold uppercase tracking-[0.25em] text-gray-400">
+                    About IMC
+                  </p>
+                  <h3 className="mt-3 text-2xl font-black">About Us</h3>
+                  <p className="mt-3 text-sm leading-6 text-gray-500">
+                    Learn more about IMC, our purpose and the community behind the tierlist.
+                  </p>
+                  <p className="mt-5 text-sm font-bold text-gray-300 transition-transform group-hover:translate-x-1">
+                    Learn more →
+                  </p>
+                </a>
+
+                <a
+                  href="/community"
+                  className="group rounded-2xl border border-white/[0.08] bg-black/25 p-7 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-indigo-400/30 hover:bg-indigo-500/[0.035] hover:shadow-[0_15px_45px_rgba(99,102,241,0.10)]"
+                >
+                  <p className="text-xs font-bold uppercase tracking-[0.25em] text-indigo-400">
+                    Community
+                  </p>
+                  <h3 className="mt-3 text-2xl font-black">Join IMC</h3>
+                  <p className="mt-3 text-sm leading-6 text-gray-500">
+                    Connect with other players, participate in the community and stay updated.
+                  </p>
+                  <p className="mt-5 text-sm font-bold text-indigo-400 transition-transform group-hover:translate-x-1">
+                    Enter community →
+                  </p>
+                </a>
+              </div>
+            </div>
+          </section>
+
         </div>
       </section>
 
-      {/* Features */}
-      <section id="explore-imc" className="relative overflow-hidden px-6 py-24">
-
-        <div className="absolute inset-0 bg-gradient-to-b from-black via-[#090000] to-black" />
-
-        <div className="relative z-10 mx-auto max-w-7xl">
-
-          <div className="mx-auto max-w-2xl text-center">
-
-            <p className="text-sm uppercase tracking-[0.3em] text-red-500">
-              Everything in one place
-            </p>
-
-            <h2 className="mt-3 text-3xl font-bold md:text-4xl">
-              Built for the IMC Community
-            </h2>
-
-            <p className="mt-4 text-gray-500">
-              Explore the different parts of the IMC ecosystem.
-            </p>
-
-          </div>
-
-          <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-
-            <div className="group rounded-2xl border border-white/10 bg-white/[0.03] p-7 backdrop-blur-xl transition-all duration-300 hover:-translate-y-2 hover:border-red-500/40">
-
-              <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-red-500/10 text-2xl">
-                ◈
-              </div>
-
-              <h3 className="text-xl font-bold">
-                Community
-              </h3>
-
-              <p className="mt-3 leading-7 text-gray-500">
-                Connect with the IMC community and stay updated with everything happening around us.
-              </p>
-
-              <a
-                href="/community"
-                className="mt-6 inline-block text-sm font-semibold text-red-500"
-              >
-                Explore →
-              </a>
-
-            </div>
-
-            <div className="group rounded-2xl border border-white/10 bg-white/[0.03] p-7 backdrop-blur-xl transition-all duration-300 hover:-translate-y-2 hover:border-red-500/40">
-            <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-red-500/10 text-2xl">
-              ◇
-            </div>
-            <h3 className="text-xl font-bold">
-              Tierlist
-            </h3>
-            <p className="mt-3 leading-7 text-gray-500">
-              Explore the latest IMC player rankings, tiers and competitive standings.
-            </p>
-            <a
-              href="/tierlist"
-              className="mt-6 inline-block text-sm font-semibold text-red-500"
-            >
-              View Tierlist →
-            </a>
-          </div>
-
-          <div className="group rounded-2xl border border-white/10 bg-white/[0.03] p-7 backdrop-blur-xl transition-all duration-300 hover:-translate-y-2 hover:border-red-500/40">
-
-              <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-red-500/10 text-2xl">
-                ◆
-              </div>
-
-              <h3 className="text-xl font-bold">
-                Resources
-              </h3>
-
-              <p className="mt-3 leading-7 text-gray-500">
-                Access useful downloads, files and resources created for the IMC community.
-              </p>
-
-              <a
-                href="/downloads"
-                className="mt-6 inline-block text-sm font-semibold text-red-500"
-              >
-                View Downloads →
-              </a>
-
-            </div>
-
-            <div className="group rounded-2xl border border-white/10 bg-white/[0.03] p-7 backdrop-blur-xl transition-all duration-300 hover:-translate-y-2 hover:border-red-500/40">
-
-              <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-red-500/10 text-2xl">
-                ✦
-              </div>
-
-              <h3 className="text-xl font-bold">
-                About Us
-              </h3>
-
-              <p className="mt-3 leading-7 text-gray-500">
-                Learn more about IMC, our community, and what we are building together.
-              </p>
-
-              <a
-                href="/about"
-                className="mt-6 inline-block text-sm font-semibold text-red-500"
-              >
-                Learn More →
-              </a>
-
-            </div>
-
-          </div>
-        </div>
-      </section>
+      {/* IMC Game Modes */}
+      
 
     </main>
     </>

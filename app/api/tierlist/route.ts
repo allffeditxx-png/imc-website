@@ -1,12 +1,9 @@
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
 
-const databasePath = path.join(
-  process.cwd(),
-  "data",
-  "tierlist.json"
-);
+const API_BASE = "https://api.github.com";
+const REPO = "allffeditxx-png/imc-web";
+const BRANCH = "main";
+const FILE_PATH = "data/tierlist.json";
 
 const POINTS: Record<string, number> = {
   LT5: 1,
@@ -32,13 +29,8 @@ const ALLOWED_GAMEMODES = [
   "Mace",
 ];
 
-function normalizeGamemode(
-  gamemode: string
-): string | null {
-  const value = gamemode
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, " ");
+function normalizeGamemode(gamemode: string): string | null {
+  const value = gamemode.trim().toLowerCase().replace(/\s+/g, " ");
 
   const map: Record<string, string> = {
     sword: "Sword",
@@ -74,88 +66,101 @@ function normalizeGamemode(
   return map[value] || null;
 }
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
+    const token = process.env.GITHUB_TOKEN;
+
+    if (!token) {
+      throw new Error("GITHUB_TOKEN is not configured");
+    }
+
+    const response = await fetch(
+      `${API_BASE}/repos/${REPO}/contents/${FILE_PATH}?ref=${encodeURIComponent(BRANCH)}`,
+      {
+        cache: "no-store",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/vnd.github+json",
+          "X-GitHub-Api-Version": "2022-11-28",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const body = await response.text();
+      throw new Error(
+        `GitHub returned HTTP ${response.status}: ${body}`
+      );
+    }
+
+    const file = await response.json();
+
+    if (!file.content) {
+      throw new Error("GitHub file has no content");
+    }
+
     const database = JSON.parse(
-      fs.readFileSync(databasePath, "utf8")
+      Buffer.from(file.content, "base64").toString("utf8")
     );
 
     const validPlayers = [];
 
-    for (const [username, player] of Object.entries(
-      database
-    ) as [string, any][]) {
+    for (const [username, player] of Object.entries(database) as [
+      string,
+      any
+    ][]) {
       if (!player?.userId) continue;
 
-      if (
-        !Array.isArray(player.results) ||
-        player.results.length === 0
-      ) {
+      if (!Array.isArray(player.results) || player.results.length === 0) {
         continue;
       }
 
       const validGamemodes: Record<string, string> = {};
 
-      for (const [
-        storedGamemode,
-        tier,
-      ] of Object.entries(
+      for (const [storedGamemode, tier] of Object.entries(
         player.gamemodes || {}
       ) as [string, string][]) {
-        const gamemode =
-          normalizeGamemode(storedGamemode);
+        const gamemode = normalizeGamemode(storedGamemode);
 
-        if (
-          !gamemode ||
-          !ALLOWED_GAMEMODES.includes(gamemode)
-        ) {
+        if (!gamemode || !ALLOWED_GAMEMODES.includes(gamemode)) {
           continue;
         }
 
-        if (
-          tier &&
-          POINTS[tier] !== undefined
-        ) {
+        if (tier && POINTS[tier] !== undefined) {
           validGamemodes[gamemode] = tier;
         }
       }
 
-      if (
-        Object.keys(validGamemodes).length === 0
-      ) {
+      if (Object.keys(validGamemodes).length === 0) {
         continue;
       }
 
-      const score =
-        Object.values(validGamemodes).reduce(
-          (total, tier) =>
-            total + POINTS[tier],
-          0
-        );
+      const score = Object.values(validGamemodes).reduce(
+        (total, tier) => total + POINTS[tier],
+        0
+      );
 
       validPlayers.push({
         username,
         userId: player.userId,
         region: player.region || "N/A",
         gamemodes: Object.fromEntries(
-          Object.entries(validGamemodes).map(
-            ([gamemode, tier]) => [
-              gamemode === "NethPot"
-                ? "Netherite Pot"
-                : gamemode === "DPot"
+          Object.entries(validGamemodes).map(([gamemode, tier]) => [
+            gamemode === "NethPot"
+              ? "Netherite Pot"
+              : gamemode === "DPot"
                 ? "Pot"
                 : gamemode,
-              tier,
-            ]
-          )
+            tier,
+          ])
         ),
         score,
       });
     }
 
-    validPlayers.sort(
-      (a, b) => b.score - a.score
-    );
+    validPlayers.sort((a, b) => b.score - a.score);
 
     return NextResponse.json(
       {
@@ -164,23 +169,21 @@ export async function GET() {
       },
       {
         headers: {
-          "Cache-Control":
-            "public, s-maxage=30, stale-while-revalidate=60",
+          "Cache-Control": "no-store",
         },
       }
     );
   } catch (error) {
-    console.error(
-      "❌ Failed to load tierlist:",
-      error
-    );
+    console.error("❌ Failed to load tierlist:", error);
 
     return NextResponse.json(
       {
         success: false,
         error: "Failed to load tierlist.",
       },
-      { status: 500 }
+      {
+        status: 500,
+      }
     );
   }
 }

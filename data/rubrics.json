@@ -1,0 +1,86 @@
+{
+  "Sword": {
+    "title": "Sword",
+    "description": "",
+    "items": []
+  },
+  "Netherite Pot": {
+    "title": "Netherite Pot",
+    "description": "",
+    "items": [
+      {
+        "id": 1790346389107,
+        "type": "message",
+        "title": "",
+        "content": "Fntntbtb"
+      }
+    ]
+  },
+  "Pot": {
+    "title": "Pot",
+    "description": "",
+    "items": []
+  },
+  "CPvP": {
+    "title": "CPvP",
+    "description": "",
+    "items": []
+  },
+  "Axe": {
+    "title": "Axe",
+    "description": "",
+    "items": []
+  },
+  "Mace": {
+    "title": "Mace",
+    "description": "",
+    "items": []
+  },
+  "UHC": {
+    "title": "UHC",
+    "description": "",
+    "items": [
+      {
+        "id": 1790440482175,
+        "type": "message",
+        "title": "",
+        "content": "UHC ranked rubric :uhc:\nEvaluation tests:\nAn evaluation test is a test in which a player LT3 or below will have there skill evaluated by a LT3 tier tester, the test is First to 5 rounds and you must win at least 4 rounds to guarantee yourself LT3. \n"
+      },
+      {
+        "id": 1790440833828,
+        "type": "message",
+        "title": "",
+        "content": ":warn_red:  Missing opponents:\nFor every missing opponents you must fight 2 players in the tier below, for example if you are bridging to HT3 and there are no HT3s available to fight you, you must fight 4 LT3s by a score of 5-2 or better against each player. \n"
+      },
+      {
+        "id": 1790440493529,
+        "type": "box",
+        "title": "🏆 LT1 → HT1 ",
+        "content": " LT1 → HT1\n10 rounds:\n\nPhase 1: Beat two opponents in the Tier below you. Don't let anyone get more than 6 rounds on you.\n\nPhase 2: Beat two opponents in the same Tier as you with at least a 20-14 overall score.\n\nPhase 3: Beat the HT1 Player. If successful you will receive HT1."
+      },
+      {
+        "id": 1790440599088,
+        "type": "box",
+        "title": "🏆 HT2 → LT1",
+        "content": "HT2 → LT1\nFirst to 10:\n\nPhase 1: Beat 2 opponents in the same Tier as you with at least a 20-14 overall score.\n\nPhase 2: Achieve an equal or better total score against 2 players in the Tier you are testing for. You must get a minimum of 7 rounds on each opponent.\n\n:medalla2: LT2 → HT2\nPhase 1: Beat two opponents in the same Tier as you with at least a 20-14 overall score.\nPhase 2: Achieve an equal or better score against two players in the Tier you are testing for. You must get a minimum of 7 rounds on each opponent."
+      },
+      {
+        "id": 1790440705957,
+        "type": "box",
+        "title": "🥈 HT3 → LT2",
+        "content": " HT3 → LT2\n\nPhase 1: Beat two opponents in the same Tier as you with at least a 20-14 overall score.\n\nPhase 2: Achieve an equal or better score against two players in the Tier you are testing for. You must get a minimum of 7 rounds on each opponent."
+      },
+      {
+        "id": 1790440780678,
+        "type": "box",
+        "title": "🥉 Testing for HT3",
+        "content": "Phase 1: If you beat your Evaluation Tester 5-3 or better, you may test for HT3 by creating a ticket. \n\nPhase 2: Get at least 7 rounds off your HT3 opponent in a first to 10 duel (7-10)."
+      }
+    ]
+  },
+  "SMP": {
+    "title": "SMP",
+    "description": "",
+    "items": []
+  }
+}
